@@ -1,293 +1,174 @@
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bulssi: 하루 루틴 — 습관 트래커</title>
-<meta name="description" content="매일 작은 불씨 하나를 지피는 마음으로 습관을 만들어가는 앱, 불씨. 체크, 스트릭, 통계까지 한 곳에서.">
-<link rel="icon" href="assets/icon.png">
+<title>Feature: 불씨</title>
 <style>
-  :root{
-    --bg:#1C1512;
-    --ember:#FF7A3D;
-    --ember-dark:#E05A1F;
-    --ink:#FBF1E8;
-    --ink-soft:#C9B4A6;
-    --card:#2A1F1A;
-    --border:#4A362C;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    font-family:"Apple SD Gothic Neo","Malgun Gothic","Pretendard",-apple-system,BlinkMacSystemFont,sans-serif;
-    background:var(--bg);
-    color:var(--ink);
-    line-height:1.6;
-  }
-  a{color:inherit;text-decoration:none;}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+  @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Space+Mono:wght@400;700&display=swap');
 
-  header{
-    position:sticky;top:0;z-index:10;
-    background:rgba(28,21,18,0.9);
-    backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--border);
+  :root {
+    --paper: #fafaf6; --paper-raised: #ffffff; --ink: #101012;
+    --ink-soft: #55534c; --ink-faint: #94918a; --rule: #d8d5cb;
+    --spot: #ff7a3d; --focus: #101012;
   }
-  header .wrap{
-    display:flex;align-items:center;justify-content:space-between;
-    height:64px;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121210; --paper-raised: #1a1a17; --ink: #f2f0e8;
+      --ink-soft: #b5b1a5; --ink-faint: #706d63; --rule: #38362f; --focus: #f2f0e8;
+    }
   }
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;}
-  .brand img{width:32px;height:32px;border-radius:8px;}
-  nav{display:flex;gap:28px;font-size:14px;font-weight:600;color:var(--ink-soft);}
-  nav a:hover{color:var(--ember);}
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    padding:12px 22px;border-radius:12px;font-weight:700;font-size:15px;
-    background:var(--ember);color:#1C1512;
-    box-shadow:0 6px 20px rgba(255,122,61,0.35);
-    transition:transform .15s ease, box-shadow .15s ease;
-  }
-  .btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(255,122,61,0.45);}
-  .btn.ghost{
-    background:transparent;color:var(--ember);
-    box-shadow:none;border:1.5px solid var(--ember);
+  :root[data-theme="dark"] {
+    --paper: #121210; --paper-raised: #1a1a17; --ink: #f2f0e8;
+    --ink-soft: #b5b1a5; --ink-faint: #706d63; --rule: #38362f; --focus: #f2f0e8;
   }
 
-  .hero{padding:88px 0 64px;}
-  .hero .wrap{
-    display:grid;grid-template-columns:1.1fr 0.9fr;gap:56px;align-items:center;
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 17px; line-height: 1.65; -webkit-font-smoothing: antialiased;
   }
-  .eyebrow{
-    display:inline-block;padding:6px 14px;border-radius:999px;
-    background:rgba(255,122,61,0.15);color:var(--ember);
-    font-size:13px;font-weight:700;margin-bottom:20px;
-  }
-  h1{font-size:44px;font-weight:900;letter-spacing:-0.02em;line-height:1.25;margin-bottom:20px;}
-  h1 .accent{color:var(--ember);}
-  .hero p.lead{font-size:17px;color:var(--ink-soft);margin-bottom:32px;max-width:480px;}
-  .cta-row{display:flex;gap:14px;flex-wrap:wrap;}
+  .masthead-font { font-family: "Big Shoulders Display", "Archivo Black", sans-serif; }
+  .mono { font-family: "Space Mono", ui-monospace, monospace; }
+  a { color: inherit; text-decoration: none; }
 
-  .phone-mock{
-    justify-self:center;width:280px;
-    background:#0F0B09;border-radius:36px;padding:14px;
-    box-shadow:0 30px 60px rgba(0,0,0,0.5);
-  }
-  .phone-screen{background:var(--card);border-radius:24px;overflow:hidden;min-height:520px;}
-  .phone-topbar{background:linear-gradient(135deg,var(--ember),var(--ember-dark));color:#1C1512;padding:20px 18px 16px;font-weight:800;font-size:16px;}
-  .phone-topbar .sub{font-weight:500;font-size:12px;opacity:0.8;margin-top:2px;}
-  .habit-card{
-    background:rgba(255,255,255,0.03);margin:14px;padding:14px;border-radius:16px;
-    border:1px solid var(--border);
-    display:flex;gap:12px;align-items:center;
-  }
-  .habit-ring{
-    width:40px;height:40px;border-radius:50%;flex-shrink:0;
-    background:conic-gradient(var(--ember) var(--p,70%), rgba(255,255,255,0.08) 0);
-    display:flex;align-items:center;justify-content:center;
-  }
-  .habit-ring::after{content:"";width:28px;height:28px;border-radius:50%;background:var(--card);}
-  .habit-info b{display:block;font-size:14px;}
-  .habit-info span{font-size:12px;color:var(--ink-soft);}
-  .tag-row{display:flex;gap:6px;flex-wrap:wrap;margin:0 14px 14px;}
-  .tag{background:rgba(255,122,61,0.15);color:var(--ember);font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;}
+  .page { max-width: 76rem; margin: 0 auto; padding: 0 1.8rem; }
 
-  section{padding:72px 0;}
-  .section-title{text-align:center;margin-bottom:52px;}
-  .section-title h2{font-size:30px;font-weight:900;margin-bottom:10px;}
-  .section-title p{color:var(--ink-soft);font-size:15px;}
-
-  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
-  .feature-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;}
-  .feature-icon{
-    width:48px;height:48px;border-radius:14px;
-    background:rgba(255,122,61,0.15);
-    display:flex;align-items:center;justify-content:center;
-    font-size:22px;margin-bottom:16px;
+  .runhead {
+    position: fixed; top: 0; bottom: 0; left: 0.9rem; z-index: 20;
+    display: flex; align-items: center; pointer-events: none;
   }
-  .feature-card h3{font-size:17px;font-weight:800;margin-bottom:8px;}
-  .feature-card p{font-size:14px;color:var(--ink-soft);}
-
-  .how{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
-  .step{text-align:center;padding:0 8px;}
-  .step .num{
-    width:40px;height:40px;border-radius:50%;
-    background:var(--ember);color:#1C1512;
-    display:flex;align-items:center;justify-content:center;
-    font-weight:800;margin:0 auto 14px;
-  }
-  .step h4{font-size:15px;font-weight:800;margin-bottom:6px;}
-  .step p{font-size:13px;color:var(--ink-soft);}
-
-  .cta-final{text-align:center;}
-  .cta-final .wrap{
-    background:linear-gradient(135deg,var(--ember),var(--ember-dark));
-    border-radius:28px;padding:64px 32px;color:#1C1512;
-  }
-  .cta-final h2{font-size:28px;font-weight:900;margin-bottom:12px;}
-  .cta-final p{opacity:0.85;margin-bottom:28px;font-size:15px;}
-  .cta-final .btn{background:#1C1512;color:#FBF1E8;box-shadow:none;}
-
-  footer{padding:36px 0;border-top:1px solid var(--border);}
-  footer .wrap{
-    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-    font-size:13px;color:var(--ink-soft);
+  .runhead span {
+    display: inline-block; writing-mode: vertical-rl;
+    font-family: "Space Mono"; font-size: 0.72rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-faint);
   }
 
-  @media (max-width:860px){
-    nav{display:none;}
-    .hero .wrap{grid-template-columns:1fr;}
-    .phone-mock{order:-1;}
-    h1{font-size:34px;}
-    .features{grid-template-columns:1fr;}
-    .steps{grid-template-columns:1fr 1fr;}
+  .backbar {
+    position: fixed; top: 1.2rem; right: 1.6rem; z-index: 20;
+    font-family: "Space Mono"; font-size: 0.75rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--ink-soft);
+    border-bottom: 1px solid var(--ink-faint); padding-bottom: 0.2rem;
   }
+  .backbar:hover { color: var(--ink); border-color: var(--ink); }
+
+  .opener {
+    padding: 6rem 0 3rem; border-bottom: 3px solid var(--ink);
+    display: grid; grid-template-columns: 1.3fr 1fr; gap: 3rem; align-items: end;
+  }
+  .opener .kicker {
+    font-family: "Space Mono"; font-size: 0.78rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--spot); display: block; margin-bottom: 1.2rem;
+  }
+  .opener h1 {
+    font-family: "Big Shoulders Display"; font-weight: 900;
+    font-size: clamp(2.6rem, 7vw, 5.2rem); line-height: 0.92; margin: 0; text-transform: uppercase;
+  }
+  .opener .dek { font-style: italic; font-size: 1.2rem; color: var(--ink-soft); margin: 1.4rem 0 0; max-width: 32rem; }
+  .opener .byline { font-family: "Space Mono"; font-size: 0.78rem; color: var(--ink-faint); text-align: right; line-height: 1.9; }
+  @media (max-width: 760px) { .opener { grid-template-columns: 1fr; } .opener .byline { text-align: left; } }
+
+  .plate-row {
+    padding: 3rem 0; display: grid; grid-template-columns: 1fr 1.3fr;
+    gap: 3rem; align-items: center; border-bottom: 1px solid var(--rule);
+  }
+  .plate { position: relative; border: 1px solid var(--rule); background: var(--paper-raised); padding: 1.6rem; }
+  .plate .shot { width: 100%; border-radius: 4px; display: block; }
+  .plate .cap { margin-top: 1rem; font-family: "Space Mono"; font-size: 0.72rem; color: var(--ink-faint); display: flex; justify-content: space-between; }
+  .lede p.body:first-of-type::first-letter {
+    font-family: "Big Shoulders Display"; font-weight: 900; font-size: 3.4rem;
+    line-height: 0.8; float: left; padding: 0.05em 0.12em 0 0; color: var(--spot);
+  }
+  .lede p.body { margin: 0 0 1.1rem; max-width: 34rem; }
+
+  .factbox { border-top: 2px solid var(--ink); padding-top: 1rem; margin-top: 1.4rem; max-width: 30rem; }
+  .factbox dl { display: flex; flex-wrap: wrap; gap: 0 1.8rem; margin: 0; }
+  .factbox dt { font-family: "Space Mono"; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin: 0; }
+  .factbox dd { font-family: "Space Mono"; font-size: 0.85rem; margin: 0.1rem 0 0.8rem; color: var(--ink); }
+
+  .playbadge {
+    display: inline-flex; align-items: center; gap: 0.6em; margin-top: 1.6rem; padding: 0.8rem 1.3rem;
+    background: var(--ink); color: var(--paper); font-family: "Space Mono"; font-size: 0.82rem;
+    letter-spacing: 0.04em; text-transform: uppercase; transition: background-color 0.2s ease;
+  }
+  .playbadge:hover { background: var(--spot); color: #fff; }
+
+  @media (max-width: 760px) { .plate-row { grid-template-columns: 1fr; } }
+
+  .pull-section { padding: 3.5rem 0; border-bottom: 1px solid var(--rule); }
+  .pull-section .label { font-family: "Space Mono"; font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 1.8rem; }
+  .feature-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .feature-list li { display: grid; grid-template-columns: 4.5rem 1fr; gap: 1.4rem; padding: 1.4rem 0; border-top: 1px solid var(--rule); }
+  .feature-list li:first-child { border-top: none; }
+  .feature-list .fnum { font-family: "Big Shoulders Display"; font-weight: 900; font-size: 1.8rem; color: var(--spot); opacity: 0.5; }
+  .feature-list h3 { font-family: "Big Shoulders Display"; font-weight: 700; text-transform: uppercase; font-size: 1.15rem; margin: 0 0 0.35rem; }
+  .feature-list p { margin: 0; color: var(--ink-soft); max-width: 36rem; }
+
+  .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.6rem; }
+  @media (max-width: 760px) { .gallery-grid { grid-template-columns: 1fr; } }
+
+  .colophon { padding: 4rem 0 6rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; }
+  .colophon .masthead-font { font-weight: 900; font-size: 1.4rem; text-transform: uppercase; }
+  .colophon .meta { font-family: "Space Mono"; font-size: 0.78rem; color: var(--ink-soft); text-align: right; line-height: 1.8; }
+  .colophon .meta a:hover { color: var(--ink); text-decoration: underline; }
 </style>
-</head>
-<body>
 
-<header>
-  <div class="wrap">
-    <div class="brand"><img src="assets/icon.png" alt="Bulssi 아이콘"> Bulssi</div>
-    <nav>
-      <a href="#features">기능</a>
-      <a href="#how">사용법</a>
-      <a href="#download">다운로드</a>
-    </nav>
-    <a class="btn" href="#download">앱 다운로드</a>
-  </div>
-</header>
+<div class="runhead"><span>KAKIMIND — ISSUE № 01 — FEATURE: 불씨</span></div>
+<a class="backbar" href="https://kakimind.github.io/kakimind-apps/">← Back to Issue Index</a>
 
-<section class="hero">
-  <div class="wrap">
+<div class="page">
+  <section class="opener">
     <div>
-      <span class="eyebrow">습관 트래커</span>
-      <h1>매일 작은 불씨 하나,<br><span class="accent">습관</span>이 됩니다</h1>
-      <p class="lead">
-        할 일을 체크할 때마다 오늘의 진행 링이 채워지고 불씨가 점점 밝아져요.
-        습관이 하루하루 쌓이면 스트릭이 되고, 스트릭이 쌓이면 통계가 됩니다 —
-        그 과정을 눈으로 확인하며 계속할 힘을 얻도록 만들었어요.
-      </p>
-      <div class="cta-row">
-        <a class="btn" href="#download">지금 시작하기</a>
-        <a class="btn ghost" href="#features">기능 살펴보기</a>
-      </div>
+      <span class="kicker">§03 — Habit Tracker — Released</span>
+      <h1>불씨</h1>
+      <p class="dek">매일 작은 불씨 하나, 습관이 됩니다.</p>
     </div>
+    <div class="byline">BY KAKIMIND<br>SOLO ANDROID STUDIO<br>FEATURED IN ISSUE № 01</div>
+  </section>
 
-    <div class="phone-mock">
-      <div class="phone-screen">
-        <div class="phone-topbar">
-          오늘<br>
-          <span class="sub">오전 2개 · 저녁 1개 남음</span>
-        </div>
-        <div class="habit-card">
-          <div class="habit-ring" style="--p:85%"></div>
-          <div class="habit-info"><b>물 8잔 마시기</b><span>12일 연속</span></div>
-        </div>
-        <div class="habit-card">
-          <div class="habit-ring" style="--p:40%"></div>
-          <div class="habit-info"><b>책 10페이지 읽기</b><span>3일 연속</span></div>
-        </div>
-        <div class="habit-card">
-          <div class="habit-ring" style="--p:100%"></div>
-          <div class="habit-info"><b>저녁 스트레칭</b><span>27일 연속</span></div>
-        </div>
-        <div class="tag-row">
-          <span class="tag">#12주 히트맵</span>
-          <span class="tag">#스트릭</span>
-        </div>
+  <section class="plate-row">
+    <figure class="plate">
+      <img class="shot" src="assets/store-shots/shot1.png" alt="불씨 오늘 화면 — 습관 체크리스트">
+      <div class="cap"><span>FIG. 01</span><span>오늘 — 체크리스트</span></div>
+    </figure>
+    <div class="lede">
+      <p class="body">할 일을 체크할 때마다 오늘의 진행 링이 채워지고 불씨가 점점 밝아진다. 계정 없이, 기기 안에서만 조용히 쌓이는 습관 기록.</p>
+      <p class="body">습관을 유지하는 건 알림이 아니라 꾸준함이라고 믿는다. 그래서 억지로 끌어당기는 대신, 체크 한 번의 손맛과 불씨가 밝아지는 작은 피드백 하나에만 집중했다. 계정도, 서버도 없다 — 기록은 전부 내 기기 안에만 남는다.</p>
+      <div class="factbox">
+        <dl>
+          <div><dt>Platform</dt><dd>Android</dd></div>
+          <div><dt>Status</dt><dd>Released</dd></div>
+          <div><dt>Genre</dt><dd>Habit Tracker</dd></div>
+        </dl>
       </div>
+      <a class="playbadge" href="https://play.google.com/store/apps/details?id=com.kakimind.bulssi" target="_blank" rel="noopener">▶ Google Play에서 다운로드</a>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="features">
-  <div class="wrap">
-    <div class="section-title">
-      <h2>작은 불씨 하나로 시작해요</h2>
-      <p>체크, 스트릭, 통계까지 필요한 기능만 한 곳에 담았어요.</p>
+  <section class="pull-section">
+    <div class="label">What's Inside</div>
+    <ul class="feature-list">
+      <li><span class="fnum">01</span><div><h3>오늘</h3><p>오늘 해야 할 습관을 오전/저녁으로 나눠 보여주고, 체크 한 번으로 끝. 드래그로 순서도 자유롭게 바꿀 수 있어요.</p></div></li>
+      <li><span class="fnum">02</span><div><h3>통계</h3><p>12주 히트맵, 요일별·카테고리별 달성률로 내 패턴을 한눈에 볼 수 있어요.</p></div></li>
+      <li><span class="fnum">03</span><div><h3>기록</h3><p>습관별 스트릭과 월별 캘린더, 8주 추이를 상세히 확인할 수 있어요.</p></div></li>
+      <li><span class="fnum">04</span><div><h3>습관별 알림</h3><p>습관마다 따로 알림 시각을 정할 수 있고, 라이트·다크·세피아 등 테마 5종, 17개 언어를 지원해요.</p></div></li>
+      <li><span class="fnum">05</span><div><h3>CSV로 내보내기</h3><p>체크 기록을 CSV로 내보내 따로 보관할 수 있어요.</p></div></li>
+      <li><span class="fnum">06</span><div><h3>기기에만 저장</h3><p>불씨는 계정이 없어요. 습관과 기록은 전부 기기 안에만 저장되고 서버로 전송되지 않아요.</p></div></li>
+    </ul>
+  </section>
+
+  <section class="pull-section">
+    <div class="label">Gallery</div>
+    <div class="gallery-grid">
+      <figure class="plate"><img class="shot" src="assets/store-shots/shot2.png" alt="12주 히트맵과 통계 화면"><div class="cap"><span>FIG. 02</span><span>통계 — 12주 히트맵</span></div></figure>
+      <figure class="plate"><img class="shot" src="assets/store-shots/shot3.png" alt="습관별 기록 화면"><div class="cap"><span>FIG. 03</span><span>기록 — 스트릭</span></div></figure>
+      <figure class="plate"><img class="shot" src="assets/store-shots/shot4.png" alt="습관 상세 화면"><div class="cap"><span>FIG. 04</span><span>습관 상세</span></div></figure>
+      <figure class="plate"><img class="shot" src="assets/store-shots/shot5.png" alt="테마와 알림 설정 화면"><div class="cap"><span>FIG. 05</span><span>설정 — 테마·알림</span></div></figure>
     </div>
-    <div class="features">
-      <div class="feature-card">
-        <div class="feature-icon">✅</div>
-        <h3>오늘</h3>
-        <p>오늘 해야 할 습관을 오전/저녁으로 나눠 보여주고, 체크 한 번으로 끝. 드래그로 순서도 자유롭게 바꿀 수 있어요.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>통계</h3>
-        <p>12주 히트맵, 요일별·카테고리별 달성률로 내 패턴을 한눈에 볼 수 있어요.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🗓️</div>
-        <h3>기록</h3>
-        <p>습관별 스트릭과 월별 캘린더, 8주 추이를 상세히 확인할 수 있어요.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">⏰</div>
-        <h3>습관별 알림</h3>
-        <p>습관마다 따로 알림 시각을 정할 수 있고, 라이트·다크·세피아 등 테마 5종, 17개 언어를 지원해요.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📤</div>
-        <h3>CSV로 내보내기</h3>
-        <p>체크 기록을 CSV로 내보내 따로 보관할 수 있어요.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h3>기기에만 저장</h3>
-        <p>불씨는 계정이 없어요. 습관과 기록은 전부 기기 안에만 저장되고 서버로 전송되지 않아요.</p>
-      </div>
+  </section>
+
+  <footer class="colophon">
+    <span class="masthead-font">Kakimind</span>
+    <div class="meta">
+      <a href="privacy.html">개인정보처리방침</a> · <a href="https://kakimind.github.io/kakimind-apps/">다른 작품 보기</a><br>
+      Contact: <a href="mailto:kakimind@gmail.com">kakimind@gmail.com</a><br>
+      © 2026 kakimind — 불씨
     </div>
-  </div>
-</section>
-
-<section class="how" id="how">
-  <div class="wrap">
-    <div class="section-title">
-      <h2>시작은 간단해요</h2>
-      <p>오늘부터, 작은 불씨 하나 붙여보세요.</p>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <div class="num">1</div>
-        <h4>습관 만들기</h4>
-        <p>만들고 싶은 습관을 추가해요.</p>
-      </div>
-      <div class="step">
-        <div class="num">2</div>
-        <h4>알림 설정</h4>
-        <p>습관마다 알림 시각을 정해요.</p>
-      </div>
-      <div class="step">
-        <div class="num">3</div>
-        <h4>체크하기</h4>
-        <p>해낸 습관을 하루에 한 번 체크해요.</p>
-      </div>
-      <div class="step">
-        <div class="num">4</div>
-        <h4>불씨 키우기</h4>
-        <p>스트릭과 통계로 꾸준함을 확인해요.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="cta-final" id="download">
-  <div class="wrap">
-    <h2>습관을 만들고 지켜나가는 가장 가벼운 방법</h2>
-    <p>무료로 시작할 수 있어요. 개수가 많아지면 목록에 광고가 함께 표시돼요.</p>
-    <a class="btn" href="https://play.google.com/store/apps/details?id=com.kakimind.bulssi" target="_blank" rel="noopener">Google Play에서 다운로드</a>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <span>© 2026 Bulssi</span>
-    <span><a href="privacy.html" style="color:inherit;text-decoration:underline;">개인정보 처리방침</a></span>
-  </div>
-</footer>
-
-</body>
-</html>
+  </footer>
+</div>
